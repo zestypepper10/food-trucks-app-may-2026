@@ -146,7 +146,16 @@ async function deleteOneFoodTruck(id) {
 // 11. updateFoodTruckLocation(id, newLocation)
 
 // 12. updateFoodTruckRating(id, newRating)
-
+async function updateFoodTruckRating(id, newRating) {
+  const result = await db.query(`
+    UPDATE food_trucks
+    SET rating = $2
+    WHERE id = $1
+    RETURNING *`,
+    [id, newRating]
+);
+  return result.rows[0];
+}
 // ---------------------------------
 // API Endpoints
 // ---------------------------------
@@ -230,9 +239,9 @@ app.post("/delete-one-food-truck/:id", async (req, res) => {
 
   await deleteOneFoodTruck(id);
 
-  res.send(`Success! ${id} was deleted.`);
+// 12. POST /update-food-truck-rating - BONUS! - ZESTY
+app.post("/update-food-truck-rating", async (req, res) => {
+  const {id, rating} = req.body;
+  const truck = await updateFoodTruckRating(id, rating);
+   res.send(`Success! ${truck.name}'s rating was updated to ${truck.rating}.`);
 });
-
-// 11. POST /update-food-truck-location
-
-// 12. POST /update-food-truck-rating - BONUS!
