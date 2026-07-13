@@ -36,10 +36,41 @@ async function getFoodTruckById(id) {
 }
 
 // 3. getVeganFoodTrucks()
+// Gets all food trucks that offer vegan options
+async function getVeganFoodTrucks() {
+  const result = await db.query(
+    "SELECT * FROM food_trucks WHERE has_vegan_options = true",
+  );
+  return result.rows; // array of truck objects with vegan options
+}
 
 // 4. getFoodTrucksByPrice(price)
 
+//helper function to get food by price level - ranging from 1-5 as a scale with error handling to make sure user returns value between 1-5
+
+async function getFoodTrucksByPrice(price) {
+  if (price < 1 || price > 5) {
+    throw new Error("Price level must be between 1 and 5");
+  }
+  const result = await db.query(
+    "SELECT * FROM food_trucks WHERE price_level = $1",
+    [price],
+  );
+  return result.rows;
+}
+
+
 // 5. getTopRatedFoodTrucks()
+
+async function getTopRatedFoodTrucks() {
+  const result = await db.query(`
+    SELECT *
+    FROM food_trucks
+    WHERE rating >= 4.5;
+  `);
+
+  return result.rows;
+}
 
 // 6. getFoodTrucksSortedByRating()
 
@@ -142,7 +173,7 @@ app.post("/add-one-food-truck", async (req, res) => {
 
 // 10. POST /delete-one-food-truck/:id - Seth
 
-// 11. POST /update-food-truck-location - Arianne
+// 11. POST /update-food-truck-location 
 
-// 12. POST /update-food-truck-rating - BONUS!
+// 12. POST /update-food-truck-rating 
 
