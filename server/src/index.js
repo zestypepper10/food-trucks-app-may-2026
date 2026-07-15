@@ -148,6 +148,12 @@ async function deleteOneFoodTruck(id) {
 }
 
 // 11. updateFoodTruckLocation(id, newLocation)
+async function updateFoodTruckLocation(id, newLocation) {
+  await db.query("UPDATE food_trucks SET current_location =$1 WHERE id = $2", [
+    id,
+    newLocation,
+  ]);
+}
 
 // 12. updateFoodTruckRating(id, newRating)
 // Updates the rating of a specific food truck in the database using its ID to create a new rating.
