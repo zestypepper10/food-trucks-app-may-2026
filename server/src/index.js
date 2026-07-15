@@ -5,6 +5,7 @@
 import express from "express";
 import pg from "pg";
 import config from "./config.js";
+import cors from "cors";
 
 const db = new pg.Pool({
   connectionString: config.databaseUrl + "&uselibpqcompat=true",
@@ -12,7 +13,10 @@ const db = new pg.Pool({
 });
 
 const app = express();
+
+app.use(cors());
 app.use(express.json());
+
 
 const port = 3000;
 app.listen(port, () => {
@@ -146,14 +150,30 @@ async function deleteOneFoodTruck(id) {
 // 11. updateFoodTruckLocation(id, newLocation)
 
 // 12. updateFoodTruckRating(id, newRating)
+// Updates the rating of a specific food truck in the database using its ID to create a new rating.
 async function updateFoodTruckRating(id, newRating) {
-  const result = await db.query(`
+
+  // Carries out a SQL UPDATE query and wait for the database to finish (await).
+  const result = await db.query(
+    `
     UPDATE food_trucks
+
+    // Replace the current rating with the new rating provided.
     SET rating = $2
+
+    // Only update the food truck whose ID matches the given ID.
     WHERE id = $1
-    RETURNING *`,
+
+    // Return the updated row after the change is made.
+    RETURNING *
+    `,
+    // Provides the values for the SQL placeholders:
+    // $1 = id
+    // $2 = newRating
     [id, newRating]
-);
+  );
+
+  // Return the updated food truck object to the endpoint.
   return result.rows[0];
 }
 // ---------------------------------
@@ -240,8 +260,17 @@ app.post("/delete-one-food-truck/:id", async (req, res) => {
   await deleteOneFoodTruck(id);
 });
 // 12. POST /update-food-truck-rating - BONUS! - ZESTY
+
+// Creates a POST endpoint that allows a client to update a food truck's rating.
 app.post("/update-food-truck-rating", async (req, res) => {
-  const {id, rating} = req.body;
+
+  // Retrieves the food truck ID and the new rating from the JSON request body.
+  const { id, rating } = req.body;
+
+  // Calls the helper function to update the rating in the database.
+  // The updated food truck is returned and stored in the "truck" variable.
   const truck = await updateFoodTruckRating(id, rating);
-   res.send(`Success! ${truck.name}'s rating was updated to ${truck.rating}.`);
-}); 
+
+  // Sends a confirmation message back to the client showing the updated rating.
+  res.send(`Success! ${truck.name}'s rating was updated to ${truck.rating}.`);
+});
